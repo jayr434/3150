@@ -1,7 +1,0 @@
-import time
-print("HI")
-for i in range(1000000000):
-  total += i 
-print("HI")
-
-
