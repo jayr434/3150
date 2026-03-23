@@ -1,15 +1,15 @@
-#include "text_mode.h"
+#include "text_mode.h"      //include header FILE from /include 
 #include <iostream>
 #include <string>
 #include <cctype>
 
-namespace text_mode {
-    void run(int argc, char* argv[]) {
+namespace text_mode {       //same namespace, function as declared in header
+    void run(int argc, char* argv[]) {      // --TEST CORRECT USAGE
         if (argc < 3) {
             std::cout << "Usage: ./analyzer text <string>" << std::endl;
             return;
         }
-
+        // -- Create 
         std::string str = argv[2];
         std::cout << "original str: " << str<<std::endl;
 

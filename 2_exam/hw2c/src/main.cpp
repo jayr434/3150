@@ -6,12 +6,13 @@
 
 int main(int argc, char* argv[]){
   if (argc < 2){
-    std::cout << "Usage: ./analyzer <mode> [arguments]" << std::endl;
+    std::cout << "Usage: ./analyzer <mode> [arguments]" << std::endl; //usage if user inputs no args  
     return 1;
   }
   
-  std::string mode = argv[1];
-
+  std::string mode = argv[1];   //c++ string: std::string 
+                                //can dynamically shrink/grow
+                                //supports assignment, comparison, concatenation, length()  
   int cmode = 0;
   if (mode == "text" || mode =="Text") cmode = 1;
   else if (mode == "add" || mode == "Add") cmode = 2;
