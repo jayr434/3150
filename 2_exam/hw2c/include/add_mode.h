@@ -8,7 +8,7 @@ namespace add_mode {
 
   int add(int a, int b);        
   double add(double a, double b);
-  std::string add(std::string a, std::string b);
+  std::string add(std::string a, std::string b); //returns std::string
 }
 #endif
 
@@ -18,3 +18,5 @@ namespace add_mode {
 #define ADD_MODE_H      
 
 #include <string>
+
+*/
