@@ -8,9 +8,15 @@ class Rectangle {
 //private:
     double width_;  //underscore conventionally means private vars
 public:
+    Rectangle(double width, double height){     //function included in class definition
+        width_ = width;
+        height_ = height;
+    }
+    //Rectangle(double w, double h): width_(w), height_(h) {} // constructor (more efficient)
     double height_;
     double area() const; //inside area() fxn, rectangle instance will NOT be modified (compiler-enforced)
     void setWidth(double width);
+    double getWidth() const;
 };
 
 double Rectangle::area() {
@@ -27,8 +33,8 @@ double getWidth(){
 
 int main(){
     Rectangle r(5, 2);
-    r.setWidth(5);
-    r.height_ = 2;
+    //r.setWidth(5);
+    //r.height_ = 2;
     cout <<r.getWidth() << endl;
     return 0;
 }
