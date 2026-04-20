@@ -1,0 +1,48 @@
+We need to implement a simplified version of the game 2048 in cpp. It will involve:
+- 2D arrays
+- STL library tools including std::vector, std::stack, and std::algorithm
+- apply iterators, auto keyword, and adapters effectively
+
+- implement game mechanics such as shifting, merging, and undo
+- verify your program using automated tests.
+
+the output will be in a file called solution.cpp to the proper repo.
+
+The game is played on a 4 × 4 board:
+• Each turn, the player chooses a direction: left (a), right (d), up (w), or
+down (s).
+1
+• Tiles slide in that direction (if possible). Adjacent tiles of the same
+value merge into one tile of double the value.
+• After each move, a new tile (usually a 2) spawns in an empty cell.
+– Note: If you attempt to slide left for example, but every cell was
+already slid to the left, then the move desn’t count and no new
+tiles spawn. Moves only count when something changes on the
+board.
+• The player can type u to undo the last move.
+• The player can type q to quit.
+
+starter files:
+starter.cpp
+test_game.py
+
+rename starter.cpp into solution.cpp
+
+# Step 1: representing and displaying the board
+
+The board is a 4 × 4 grid of integers. In C++, this can be stored as:
+`std :: vector < std :: vector <int > > board (4 , std :: vector <int>(4 , 0));`
+- ignore unnecessary whitespace
+
+Implement the print_board function to display the board so that someone can play the game. additionally, calculate anc display the current score (sum of tiles) using the compute_score function. 
+- use std:;vector instead of raw arrays for flexibility
+- access rows with board[i] and individual cells with board[i][i]
+- use range based for loops with auto& to traverse rows and cells
+- display empty cells as dots (.) for clarity
+
+printed board should look like:
+Score: 64
+4 2 2 .
+8 . . .
+2 . . .
+16 . 32 .
