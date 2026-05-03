@@ -1,0 +1,558 @@
+CSE3150
+Homework Assignment: Linked Lists, Smart Pointers,
+and Doubly Linked Lists
+Dr. Justin Furuness
+
+Prerequisite
+Note: This is meant to follow the vector assignment. Do that assignment first.
+
+Refresher: Raw, Unique, Shared, and Weak Pointers
+IMPORTANT: This section is just to refresh some of these ideas. You do NOT need to code
+anything at all for the refresher section.
+Before starting this homework, let us briefly review the four pointer types that will show
+up throughout the assignment:
+• raw pointers
+• std::unique ptr
+• std::shared ptr
+• std::weak ptr
+We are going to use these across the phases of this homework to build increasingly safer
+linked list implementations.
+
+Refresher Step 1: Raw pointers
+A raw pointer is just a memory address. It does not automatically clean up memory for you.
+#include <iostream>
+int main() {
+int* x = new int(42);
+
+1
+
+std::cout << *x << "\n";
+delete x;
+x = nullptr;
+return 0;
+}
+This is very lightweight and very fast, but it is also easy to make mistakes:
+• forgetting to call delete
+• calling delete twice
+• using a pointer after the memory has already been freed
+So raw pointers give you a lot of control, but also a lot of responsibility.
+
+Refresher Step 2: std::unique ptr
+A unique ptr owns one object exclusively. When the unique ptr goes away, it automatically
+deletes the object it owns.
+#include <iostream>
+#include <memory>
+int main() {
+std::unique_ptr<int> x = std::make_unique<int>(42);
+std::cout << *x << "\n";
+return 0;
+}
+Here, we do not need to manually call delete. That is the big benefit.
+A unique ptr cannot be copied, because ownership must stay unique. It can only be
+moved.
+std::unique_ptr<int> a = std::make_unique<int>(5);
+// std::unique_ptr<int> b = a;
+// not allowed
+std::unique_ptr<int> b = std::move(a);
+This is often the cleanest smart pointer when exactly one thing should own an object.
+2
+
+Refresher Step 3: std::shared ptr
+A shared ptr allows multiple owners of the same object.
+#include <iostream>
+#include <memory>
+int main() {
+auto a = std::make_shared<int>(42);
+auto b = a;
+std::cout << *a << "\n";
+std::cout << *b << "\n";
+std::cout << a.use_count() << "\n";
+return 0;
+}
+Here, both a and b point to the same integer. The object stays alive as long as at least
+one shared ptr still owns it.
+This is convenient, but it has overhead:
+• reference counting must be maintained
+• ownership can become less clear
+
+Refresher Step 4: std::weak ptr
+A weak ptr points to an object managed by shared ptr, but it does not own it.
+#include <iostream>
+#include <memory>
+int main() {
+auto a = std::make_shared<int>(42);
+std::weak_ptr<int> w = a;
+std::cout << a.use_count() << "\n";
+if (auto locked = w.lock()) {
+std::cout << *locked << "\n";
+3
+
+}
+return 0;
+}
+The key idea is:
+• shared ptr owns
+• weak ptr observes
+This becomes extremely important when there are cycles.
+For example, if object A owns object B with a shared ptr, and object B also owns object
+A with a shared ptr, then neither object can ever be freed. That creates a memory leak.
+A weak ptr breaks that ownership cycle.
+
+Final refresher code
+Here is the complete refresher code all together:
+#include <iostream>
+#include <memory>
+int main() {
+int* raw = new int(10);
+std::cout << "raw: " << *raw << "\n";
+delete raw;
+raw = nullptr;
+auto unique = std::make_unique<int>(20);
+std::cout << "unique: " << *unique << "\n";
+auto shared1 = std::make_shared<int>(30);
+auto shared2 = shared1;
+std::cout << "shared: " << *shared1 << "\n";
+std::cout << "shared count: " << shared1.use_count() << "\n";
+std::weak_ptr<int> weak = shared1;
+if (auto locked = weak.lock()) {
+std::cout << "weak locked: " << *locked << "\n";
+}
+4
+
+return 0;
+}
+
+Overview
+In this homework, you will build several linked list data structures in C++ while exploring
+different approaches to memory management. This will tie in directly to your course project
+as you generate the graph for the course project using smart pointers.
+This homework is designed to reinforce several important ideas:
+• linked list structure and node-based data structures
+• dynamic memory management
+• raw pointers
+• std::unique ptr
+• std::shared ptr
+• std::weak ptr
+• stream operator overloading
+• ownership, memory leaks, and cleanup
+Unlike the vector lab, this is a homework. That means I will still give direction and
+structure, but there will be more design and implementation left to you.
+Your final code should live in these files:
+linked_list_raw.hpp
+linked_list_unique.hpp
+doubly_linked_list_shared.hpp
+doubly_linked_list_weak.hpp
+You may also create small main.cpp files locally to test each phase.
+
+Goal
+By the end of this homework, you should have:
+• a singly linked list built with raw pointers
+5
+
+• a singly linked list built with unique ptr
+• a doubly linked list built with shared ptr
+• a corrected doubly linked list using weak ptr for the backwards direction
+Across these phases, you will see how the same high-level data structure can have very
+different ownership models.
+
+1
+
+Phase 1 Build a Singly Linked List with Raw Pointers
+
+We will start with the most direct version: a linked list built entirely with raw pointers.
+In this phase, your linked list only needs to support:
+• adding values onto the linked list
+• printing the linked list
+
+What your class should contain by the end of this phase
+You should build a class named LinkedList.
+Inside it, you should define a node type that stores:
+• a value
+• a raw pointer to the next node
+Your list itself should store at least:
+• a raw pointer to the head node
+You may also want:
+• a raw pointer to the tail node
+That is your choice, but having a tail pointer will make appending easier.
+
+6
+
+Structure
+class LinkedList {
+private:
+struct Node {
+int value;
+Node* next;
+Node(int value) : value(value), next(nullptr) {}
+};
+Node* head_;
+Node* tail_;
+public:
+LinkedList();
+~LinkedList();
+LinkedList(const LinkedList&) = delete;
+LinkedList& operator=(const LinkedList&) = delete;
+void push_back(int value);
+void print(std::ostream& os) const;
+};
+
+Your tasks for this phase
+Implement:
+• the constructor
+• the destructor
+• push back
+• print
+For printing, output the list in a readable form such as:
+1 -> 2 -> 3
+or
+7
+
+1 2 3
+As long as it is consistent and readable, that is fine.
+
+A quick note on copying
+Just like with the vector lab, we are not going over copy constructors yet.
+Because this class manages dynamic memory, copying is something we would need to
+think carefully about. We have not covered that material yet, so for now just disable copying.
+Put these lines in your class:
+LinkedList(const LinkedList&) = delete;
+LinkedList& operator=(const LinkedList&) = delete;
+Do not worry yet about exactly what these lines are doing. For now, just include them
+and move on.
+
+What to think about
+As you implement this phase, make sure you think through:
+• what should happen when the list is empty
+• what should happen when the first node is added
+• how the destructor will visit and delete every node
+This phase gives you full manual control, but that also means you are fully responsible
+for cleanup.
+Make sure there are no memory leaks.
+
+2
+
+Phase 2 Rebuild the Singly Linked List with unique ptr
+
+Now let us rebuild the singly linked list, but this time with unique ptr instead of raw
+pointers.
+The high-level data structure is the same:
+• each node stores a value
+• each node points to the next node
+But now ownership is much clearer:
+• each node uniquely owns the next node
+• the list uniquely owns the head node
+This is actually a very natural fit for a singly linked list.
+8
+
+Suggested structure
+A good starting point would look like this:
+#pragma once
+#include <iostream>
+#include <memory>
+class LinkedList {
+private:
+struct Node {
+int value;
+std::unique_ptr<Node> next;
+Node(int value) : value(value), next(nullptr) {}
+};
+std::unique_ptr<Node> head_;
+Node* tail_;
+public:
+LinkedList();
+~LinkedList() = default;
+LinkedList(const LinkedList&) = delete;
+LinkedList& operator=(const LinkedList&) = delete;
+void push_back(int value);
+void print(std::ostream& os) const;
+};
+
+Why is the tail pointer still raw?
+You may notice something interesting here:
+• head is a unique ptr<Node>
+• tail is still just a raw pointer
+That is okay.
+9
+
+The raw pointer here is not owning anything. It is just a convenient non-owning pointer
+so that appending can be efficient.
+Ownership still flows through the unique ptr chain:
+• the list owns the head
+• each node owns the next node
+So when the head is destroyed, the entire chain will be destroyed automatically.
+
+Your tasks for this phase
+Implement:
+• the constructor
+• push back
+• print
+You do not need to manually write a destructor unless you want to. The ownership
+structure should allow the default destructor to clean everything up automatically.
+
+What to think about
+As you implement this phase, think about:
+• when to use std::make unique
+• when std::move is needed
+• why copying a unique ptr is not allowed
+This phase should feel cleaner than phase 1, because ownership is much more explicit.
+
+3
+
+Phase 3 Build a Doubly Linked List with shared ptr
+
+Now we are going to build a doubly linked list.
+A doubly linked list has nodes with:
+• a pointer to the next node
+• a pointer to the previous node
+For this phase, we are going to try using shared ptr in both directions.
+This is intentionally going to create a problem.
+10
+
+Suggested structure
+Start from something like this:
+#pragma once
+#include <iostream>
+#include <memory>
+class DoublyLinkedList {
+private:
+struct Node {
+int value;
+std::shared_ptr<Node> next;
+std::shared_ptr<Node> prev;
+Node(int value) : value(value), next(nullptr), prev(nullptr) {}
+};
+std::shared_ptr<Node> head_;
+std::shared_ptr<Node> tail_;
+public:
+DoublyLinkedList() = default;
+~DoublyLinkedList() = default;
+DoublyLinkedList(const DoublyLinkedList&) = delete;
+DoublyLinkedList& operator=(const DoublyLinkedList&) = delete;
+void push_back(int value);
+void print_forward(std::ostream& os) const;
+};
+
+Your tasks for this phase
+Implement:
+• push back
+• print forward
+
+11
+
+Once you do, the list should appear to work.
+However, there is a hidden problem:
+• node A owns node B through next
+• node B owns node A through prev
+That means there is a reference cycle.
+Even when the list object itself goes away, the nodes may still keep each other alive
+forever.
+
+Demonstrating the memory leak
+To make this more visible, add a destructor to Node that prints when a node is destroyed:
+~Node() {
+std::cout << "Destroying node " << value << "\n";
+}
+Then write a small test program that creates a doubly linked list in a local scope:
+int main() {
+{
+DoublyLinkedList list;
+list.push_back(1);
+list.push_back(2);
+list.push_back(3);
+}
+std::cout << "Done\n";
+return 0;
+}
+If the cycle exists, you may notice that the node destructors do not all run as expected.
+You can also compile with sanitizers to make memory problems easier to detect.
+For example:
+g++ -std=c++20 -Wall -Wextra -pedantic -fsanitize=address -g main.cpp -o main
+And if your compiler supports leak sanitizer:
+g++ -std=c++20 -Wall -Wextra -pedantic -fsanitize=address,leak -g main.cpp -o main
+These flags are very useful during development and debugging.
+12
+
+What to learn from this phase
+The point of this phase is not that shared ptr is bad.
+The point is that shared ptr must be used carefully. If everything owns everything else,
+then objects may never get deleted.
+That is exactly what weak ptr is designed to help with.
+
+4
+
+Phase 4 Fix the Doubly Linked List with weak ptr
+
+Now let us fix the ownership cycle.
+We still want:
+• forward links
+• backward links
+But we do not want both directions to own each other.
+The standard solution is:
+• make next a shared ptr
+• make prev a weak ptr
+That way:
+• the forward chain owns the nodes
+• the backward links simply observe
+
+Suggested structure
+Start from this:
+#pragma once
+#include <iostream>
+#include <memory>
+class DoublyLinkedList {
+private:
+struct Node {
+int value;
+std::shared_ptr<Node> next;
+std::weak_ptr<Node> prev;
+13
+
+Node(int value) : value(value), next(nullptr), prev() {}
+~Node() {
+std::cout << "Destroying node " << value << "\n";
+}
+};
+std::shared_ptr<Node> head_;
+std::shared_ptr<Node> tail_;
+public:
+DoublyLinkedList() = default;
+~DoublyLinkedList() = default;
+DoublyLinkedList(const DoublyLinkedList&) = delete;
+DoublyLinkedList& operator=(const DoublyLinkedList&) = delete;
+void push_back(int value);
+void print_forward(std::ostream& os) const;
+void print_backward(std::ostream& os) const;
+};
+
+Your tasks for this phase
+Implement:
+• push back
+• print forward
+• print backward
+When moving backward through the list, remember that a weak ptr must be converted
+temporarily into a shared ptr using lock().
+For example:
+auto previous = current->prev.lock();
+If the object still exists, lock() gives you a usable shared ptr. If the object no longer
+exists, it gives you an empty smart pointer.
+14
+
+What to learn from this phase
+This design is the clean solution for a doubly linked list built with smart pointers.
+It lets you:
+• move forward
+• move backward
+• avoid the reference cycle
+This phase is where the ownership model finally matches what we want.
+
+5
+
+Wrapping Up Test Programs
+
+For this homework, you should create small test programs for each phase.
+At minimum, each phase should test:
+• adding several values
+• printing the structure
+• scope exit and cleanup behavior
+Here are suggested test programs.
+
+Phase 1 and 2 test
+#include <iostream>
+#include "linked_list_raw.hpp"
+// or "linked_list_unique.hpp"
+int main() {
+LinkedList list;
+list.push_back(10);
+list.push_back(20);
+list.push_back(30);
+list.print(std::cout);
+return 0;
+}
+
+15
+
+Phase 3 test
+#include <iostream>
+#include "doubly_linked_list_shared.hpp"
+int main() {
+{
+DoublyLinkedList list;
+list.push_back(1);
+list.push_back(2);
+list.push_back(3);
+list.print_forward(std::cout);
+}
+std::cout << "Finished scope\n";
+return 0;
+}
+
+Phase 4 test
+#include <iostream>
+#include "doubly_linked_list_weak.hpp"
+int main() {
+{
+DoublyLinkedList list;
+list.push_back(1);
+list.push_back(2);
+list.push_back(3);
+list.print_forward(std::cout);
+std::cout << "\n";
+list.print_backward(std::cout);
+std::cout << "\n";
+}
+std::cout << "Finished scope\n";
+return 0;
+16
+
+}
+If your phase 4 implementation is correct, the node destructors should run when the list
+leaves scope.
+
+6
+
+Discussion: Performance Versus Clean Design
+
+A few final thoughts on these exercises:
+For a doubly linked list, raw pointers are generally more efficient than using shared ptr
+and weak ptr. Smart pointers add overhead:
+• shared ptr maintains reference counts
+• weak ptr must coordinate with that ownership system
+• locking a weak ptr is more work than just following a raw pointer
+So if your goal is absolute performance, raw pointers will often be faster.
+However, the smart pointer version is cleaner and safer. It makes ownership more explicit
+and reduces the chance of memory management mistakes.
+This is something you will need to balance as a C++ developer:
+• faster code is often less clean
+• cleaner code is often a little slower
+For a small doubly linked list, this difference is not a problem at all. But for a course
+project that contains a graph with 500,000 edges, that overhead matters considerably.
+That does not mean you should start optimizing everything right away.
+In fact, I strongly recommend that you build the entire course project first before optimizing anything. Get the code correct first. Get it working first. Then profile it. Then
+optimize the parts that actually matter.
+Premature optimization is one of the easiest ways to make a project harder to finish.
+
+Submission
+Complete all four phases and make sure your code compiles cleanly and runs the given tests.
+Submit through huskyct along with a screenshot of your github.
+
+17
+
+7
+
+Optional Practice
+
+While I won’t require it, there are several ways this could be extended to further your
+practice.
+One such way would be to implement iterators for this, just like you did with the vector.
+You can also extend your linked list with some of the following capabilities:
+• remove elements
+• insert at index
+• reverse the list
+• size tracking
+• iterators
+You can use the C++ reference for inspiration:
+https://en.cppreference.com/w/cpp/container/list
+
+18
+
+
