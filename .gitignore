@@ -1,8 +1,20 @@
 program.out
-a.out 
+a.out
 
 venv/*
 
 *.zip
 
 .DS_Store
+
+# Compiled binaries
+war_game
+bgp_sim
+run_tests
+*.o
+
+# Large data files
+*.bz2
+*.gz
+**/ribs.csv
+**/CAIDAASGraphCollector_*.txt
