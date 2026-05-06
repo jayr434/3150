@@ -6,7 +6,7 @@ class Point{
     double y_;
 public:
     Point() {x_ = y_ = 0;}  //default constructor, creates point (x,y) set to (0,0)
-    Point(double x, double y): x_(x), y_(y) {}  //copy constructor: copies values from 
+    Point(double x, double y): x_(x), y_(y) {}  //copy constructor: copies values from  
     Point(const Point& p):
         x_(p.getX()), y_(p.getY()) {}
     double getX() const {return x_;}

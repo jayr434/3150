@@ -3,12 +3,12 @@
 #include "point.hpp"
 
 class Rectangle {
-    Point corner_;
-    double w_, h_;
+    Point corner_;  //private var, of type `Point`
+    double w_, h_;     
 public:
-    Rectangle(): corner_(Point()), w_(0), h_(0) {}
+    Rectangle(): corner_(Point()), w_(0), h_(0) {} 
     Rectangle( double x, double y, double w, double h):
-        corner_(new Point(x, y)), w_(w), h_(h) {}
+        corner_(new Point(x, y)), w_(w), h_(h) {}   //corner declared as point (by value), `new Point()` returns ptr to Point var on heap
     Point getCorner() const {return corner_;}
     double getWidth() const {return w_;}
     double getHeight() const {return h_;}
