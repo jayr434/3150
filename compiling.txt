@@ -1,1 +1,6 @@
-c++ [FILE].cpp -o [EXECUTABLE NAME] -std=c++23 -g
+c++ -I[search path] [FILE(s)].cpp -o [EXECUTABLE NAME] -std=c++23 -g
+
+`-g` : generate debug info
+`-Wall`, `-Wextra` : Warnings
+`-std=c++17` : Standard version
+
